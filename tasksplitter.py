@@ -262,6 +262,9 @@ def reset_app():
     st.session_state.show_celebration = False
     st.session_state.task_input = ""
     st.session_state.custom_task_text = ""
+    # 添加這行來重置文本輸入框的 session state
+    if "main_task_input" in st.session_state:
+        st.session_state.main_task_input = ""
 
 # 添加自定義 CSS - 修復按鈕格式並稍微增加字體
 st.markdown("""
