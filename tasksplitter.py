@@ -25,10 +25,6 @@ if 'show_celebration' not in st.session_state:
     st.session_state.show_celebration = False
 if 'task_input' not in st.session_state:
     st.session_state.task_input = ""
-if 'trigger_ai' not in st.session_state:
-    st.session_state.trigger_ai = False
-if 'trigger_template' not in st.session_state:
-    st.session_state.trigger_template = False
 if 'custom_task_text' not in st.session_state:
     st.session_state.custom_task_text = ""
 
@@ -100,31 +96,34 @@ def split_task_with_ai(task, api_key, model):
         }
         
         # 改進的提示詞 - 避免重複步驟，要求連續性
-        system_prompt = """你是一個專門幫助懶人和容易拖延的人的任務拆分助手。
-        
+        system_prompt = """你是一個專門幫助懶人和容易拖延的人的任務拆分助手，特別針對INTP人格類型設計。INTP喜歡邏輯和系統性思考，但容易因完美主義或過度分析而拖延，因此步驟需從最簡單的物理行動開始，逐步建立動能。
+
 請遵循以下指示：
-1. 將用戶的大任務拆分為6-8個具體、可執行的小步驟
-2. 步驟之間應該有邏輯順序和連續性，後一步驟應該建立在前一步驟的基礎上
-3. 避免重複的步驟或提供多種選擇（例如：不要同時建議"看視頻學習"和"讀書學習"）
-4. 每個步驟應該非常簡單，適合容易拖延的人
-5. 在每個步驟中加入只有一個表情符號
-6. 除了專有名詞外, 使用繁體中文回答，即使用戶使用英文輸入
-7. 讓每個步驟看起來都很容易完成，降低開始的門檻
-8. 使用親切、鼓勵的語氣，像是朋友在鼓勵對方一樣
-9. 每個步驟盡量不超過15個字，每個小步驟都是行動，不要只有鼓勵的話語
+
+1. 將用戶的大任務拆分為5-9個具體、可執行的小步驟，每一步應盡可能微小（理想在5分鐘內完成）。
+2. 步驟之間必須有邏輯順序和連續性，後一步驟應直接建立在前一步驟的基礎上，以符合INTP的系統思考偏好。
+3. 避免重複的步驟或提供多種選擇（例如：不要同時建議「看視頻學習」和「讀書學習」），減少決策疲勞。
+4. 每個步驟應該非常簡單和具體，適合容易拖延的人。
+5. 在每個步驟中加入只有一個表情符號，言語增加趣味性。
+6. 除了專有名詞外，使用繁體中文回答，即使用戶使用英文輸入。
+7. 讓每個步驟看起來都很容易完成，降低開始的門檻，並強調「只需一小步」的心態。
+8. 使用親切、鼓勵的語氣，像是朋友在鼓勵對方一樣，並在鼓勵話語中強調每個小完成的成就感（例如「你已經開始了，這太棒了！」）。
+9. 每個步驟盡量不超過15個字，每個小步驟都是具體行動，不要只有鼓勵的話語。
+10. 針對INTP類型，步驟應注重邏輯性和系統性，例如從「定義問題」到「執行小實驗」，以激發他們的內在動機，但不用在步驟中提及人格類型。
 
 請按照以下格式返回：
-1. [表情符號] 第一步驟描述 (粗體字) - 鼓勵的話語
-2. [表情符號] 第二步驟描述 (粗體字) - 鼓勵的話語
+
+[表情符號] 第一步驟描述 (粗體字) - 鼓勵的話語
+[表情符號] 第二步驟描述 (粗體字) - 鼓勵的話語
 ...
 
-例如對於"學習微積分"：
-1. 📚 找到一本適合初學者的微積分教材 - 選擇合適的教材是成功的第一步！
-2. 🎯 學習極限的基本概念 - 這是微積分的基礎，慢慢理解不要急
-3. 📝 練習導數的基本計算 - 多做練習會越來越熟練
-4. 🔄 學習積分的概念和計算 - 你已經掌握導數了，積分也不難！
-5. ✅ 做綜合練習題鞏固知識 - 把學過的知識融會貫通
-6. 🚀 嘗試解決一些實際應用問題 - 看看微積分在現實中的應用，很有趣吧！
+例如對於「學習微積分」：
+📚 找到一本適合初學者的微積分教材 - 選擇合適的教材是成功的第一步，這很簡單吧！
+🎯 學習極限的基本概念 - 這是微積分的基礎，慢慢來，你一定能理解！
+📝 練習導數的基本計算 - 多做練習會越來越熟練，從一個小題開始就好！
+🔄 學習積分的概念和計算 - 你已經掌握導數了，積分也不難，繼續前進！
+✅ 做綜合練習題鞏固知識 - 把學過的知識融會貫通，每一步都在累積成就感！
+🚀 嘗試解決一些實際應用問題 - 看看微積分在現實中的應用，很有趣吧，你做得很好！
 """
         
         payload = {
@@ -244,8 +243,6 @@ def handle_task_splitting(task_input, use_template=False):
             ]
             st.session_state.progress = 0
             st.session_state.show_celebration = False
-            st.session_state.trigger_ai = False
-            st.session_state.trigger_template = False
             
         except Exception as e:
             st.error(f"任務拆分失敗: {str(e)}")
@@ -256,8 +253,6 @@ def handle_task_splitting(task_input, use_template=False):
                 for step in steps
             ]
             st.info("已使用預設模板為您拆分任務")
-            st.session_state.trigger_ai = False
-            st.session_state.trigger_template = False
 
 # 重置函數
 def reset_app():
@@ -266,8 +261,6 @@ def reset_app():
     st.session_state.progress = 0
     st.session_state.show_celebration = False
     st.session_state.task_input = ""
-    st.session_state.trigger_ai = False
-    st.session_state.trigger_template = False
     st.session_state.custom_task_text = ""
 
 # 添加自定義 CSS - 修復按鈕格式並稍微增加字體
@@ -346,13 +339,13 @@ with col1:
         "描述您想要完成的任務",
         placeholder="例如：我想學習某種技能...",
         height=90,
-        value=st.session_state.get('task_input', ''),
+        value=st.session_state.task_input,
         key="main_task_input",
         label_visibility="collapsed"
     )
     
     # 更新 session state
-    if task_input != st.session_state.get('task_input', ''):
+    if task_input != st.session_state.task_input:
         st.session_state.task_input = task_input
 
     # 操作按鈕 - 現在在範例任務上方
@@ -362,8 +355,7 @@ with col1:
         # AI 拆分按鈕 (僅在有 API 密鑰時啟用)
         if api_key:
             if st.button("🚀 AI 拆分任務", use_container_width=True, type="primary", key="ai_split_button"):
-                st.session_state.trigger_ai = True
-                st.rerun()
+                handle_task_splitting(st.session_state.task_input, use_template=False)
         else:
             st.button("🚀 AI 拆分任務", use_container_width=True, disabled=True, 
                      help="需要設置 OpenRouter API 密鑰才能使用 AI 功能")
@@ -390,25 +382,21 @@ with col1:
     with example_cols[0]:
         if st.button("🧹 收拾房間", use_container_width=True, key="example_0"):
             st.session_state.task_input = example_tasks["🧹 收拾房間"]
-            st.session_state.trigger_template = True
-            st.rerun()
+            handle_task_splitting(example_tasks["🧹 收拾房間"], use_template=True)
         
         if st.button("💪 開始健身", use_container_width=True, key="example_2"):
             st.session_state.task_input = example_tasks["💪 開始健身"]
-            st.session_state.trigger_template = True
-            st.rerun()
+            handle_task_splitting(example_tasks["💪 開始健身"], use_template=True)
 
     # 第二行按鈕
     with example_cols[1]:
         if st.button("📚 準備考試", use_container_width=True, key="example_1"):
             st.session_state.task_input = example_tasks["📚 準備考試"]
-            st.session_state.trigger_template = True
-            st.rerun()
+            handle_task_splitting(example_tasks["📚 準備考試"], use_template=True)
         
         if st.button("💻 整理檔案", use_container_width=True, key="example_3"):
             st.session_state.task_input = example_tasks["💻 整理檔案"]
-            st.session_state.trigger_template = True
-            st.rerun()
+            handle_task_splitting(example_tasks["💻 整理檔案"], use_template=True)
 
     # API 狀態提示
     if not api_key:
@@ -416,13 +404,6 @@ with col1:
 
 # 右側 - 輸出區域
 with col2:
-    # 檢查是否需要觸發任務拆分
-    if st.session_state.get('trigger_ai', False):
-        handle_task_splitting(st.session_state.task_input, use_template=False)
-
-    if st.session_state.get('trigger_template', False):
-        handle_task_splitting(st.session_state.task_input, use_template=True)
-
     # 任務列表和進度
     if st.session_state.tasks:
         st.subheader("📋 任務步驟")
