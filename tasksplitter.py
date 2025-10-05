@@ -6,7 +6,7 @@ import random
 
 # 頁面配置
 st.set_page_config(
-    page_title="任務拆分器",
+    page_title="Task Splitter",
     page_icon="🛠️",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -27,8 +27,10 @@ if 'task_input' not in st.session_state:
     st.session_state.task_input = ""
 if 'custom_task_text' not in st.session_state:
     st.session_state.custom_task_text = ""
-if 'selected_rizhu' not in st.session_state:
-    st.session_state.selected_rizhu = "甲子"  # 默认值
+if 'selected_tiangan' not in st.session_state:
+    st.session_state.selected_tiangan = "甲"
+if 'selected_dizhi' not in st.session_state:
+    st.session_state.selected_dizhi = "子"
 
 # 从 Streamlit secrets 获取 API 密钥
 api_key = st.secrets.get("OPENROUTER_API_KEY", "")
@@ -45,48 +47,38 @@ motivation_phrases = [
     "完成一個任務，就獎勵自己一下！"
 ]
 
-# 八字日柱配置
-rizhu_config = {
-    "甲子": {
-        "description": "🌳 甲木坐子水 - 聰明靈活，適合有創意的步驟",
-        "prompt_addition": "請根據甲子日柱的特性（聰明靈活、有創造力），在鼓勵話語中加入激發創意和靈活思考的建議。"
-    },
-    "乙丑": {
-        "description": "🌿 乙木坐丑土 - 穩重踏實，適合循序漸進的步驟", 
-        "prompt_addition": "請根據乙丑日柱的特性（穩重踏實、有耐心），在鼓勵話語中強調循序漸進和堅持的重要性。"
-    },
-    "丙寅": {
-        "description": "🔥 丙火坐寅木 - 熱情積極，適合充滿活力的步驟",
-        "prompt_addition": "請根據丙寅日柱的特性（熱情積極、行動力強），在鼓勵話語中激發熱情和行動力。"
-    },
-    "丁卯": {
-        "description": "🕯️ 丁火坐卯木 - 細心溫和，適合精緻有序的步驟",
-        "prompt_addition": "請根據丁卯日柱的特性（細心溫和、注重細節），在鼓勵話語中強調細心和精緻的價值。"
-    },
-    "戊辰": {
-        "description": "⛰️ 戊土坐辰土 - 穩健可靠，適合系統化的步驟",
-        "prompt_addition": "請根據戊辰日柱的特性（穩健可靠、有系統），在鼓勵話語中強調穩定和系統化的重要性。"
-    },
-    "己巳": {
-        "description": "🏞️ 己土坐巳火 - 溫和聰慧，適合靈活變通的步驟",
-        "prompt_addition": "請根據己巳日柱的特性（溫和聰慧、適應力強），在鼓勵話語中鼓勵靈活變通和智慧處理。"
-    },
-    "庚午": {
-        "description": "⚔️ 庚金坐午火 - 果斷剛毅，適合直接有效的步驟",
-        "prompt_addition": "請根據庚午日柱的特性（果斷剛毅、有效率），在鼓勵話語中強調果斷和效率的重要性。"
-    },
-    "辛未": {
-        "description": "💎 辛金坐未土 - 細緻認真，適合精準的步驟",
-        "prompt_addition": "請根據辛未日柱的特性（細緻認真、追求完美），在鼓勵話語中強調精準和認真的價值。"
-    },
-    "壬申": {
-        "description": "💧 壬水坐申金 - 聰明流動，適合靈活多變的步驟",
-        "prompt_addition": "請根據壬申日柱的特性（聰明流動、適應性強），在鼓勵話語中鼓勵靈活思考和隨機應變。"
-    },
-    "癸酉": {
-        "description": "🌊 癸水坐酉金 - 智慧冷靜，適合深思熟慮的步驟",
-        "prompt_addition": "請根據癸酉日柱的特性（智慧冷靜、思考周密），在鼓勵話語中強調深思熟慮和智慧決策。"
-    }
+# 天干地支配置
+tiangan_list = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
+dizhi_list = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
+
+# 天干五行阴阳属性
+tiangan_properties = {
+    "甲": {"wuxing": "木", "yinyang": "陽", "character": "積極開拓、領導力強"},
+    "乙": {"wuxing": "木", "yinyang": "陰", "character": "柔韌適應、協調性好"},
+    "丙": {"wuxing": "火", "yinyang": "陽", "character": "熱情奔放、行動力強"},
+    "丁": {"wuxing": "火", "yinyang": "陰", "character": "溫和細緻、持久力佳"},
+    "戊": {"wuxing": "土", "yinyang": "陽", "character": "穩重厚實、包容性強"},
+    "己": {"wuxing": "土", "yinyang": "陰", "character": "細膩靈活、適應力好"},
+    "庚": {"wuxing": "金", "yinyang": "陽", "character": "剛毅果斷、執行力強"},
+    "辛": {"wuxing": "金", "yinyang": "陰", "character": "精緻細膩、追求完美"},
+    "壬": {"wuxing": "水", "yinyang": "陽", "character": "智慧流動、適應性強"},
+    "癸": {"wuxing": "水", "yinyang": "陰", "character": "深思熟慮、洞察力佳"}
+}
+
+# 地支五行阴阳属性
+dizhi_properties = {
+    "子": {"wuxing": "水", "yinyang": "陽", "character": "聰明靈活、反應快"},
+    "丑": {"wuxing": "土", "yinyang": "陰", "character": "穩重踏實、有耐心"},
+    "寅": {"wuxing": "木", "yinyang": "陽", "character": "積極進取、有活力"},
+    "卯": {"wuxing": "木", "yinyang": "陰", "character": "溫和細緻、協調性好"},
+    "辰": {"wuxing": "土", "yinyang": "陽", "character": "穩健可靠、包容性強"},
+    "巳": {"wuxing": "火", "yinyang": "陰", "character": "聰明細膩、洞察力強"},
+    "午": {"wuxing": "火", "yinyang": "陽", "character": "熱情積極、行動力強"},
+    "未": {"wuxing": "土", "yinyang": "陰", "character": "溫和細緻、有耐心"},
+    "申": {"wuxing": "金", "yinyang": "陽", "character": "果斷剛毅、反應快"},
+    "酉": {"wuxing": "金", "yinyang": "陰", "character": "精緻認真、追求完美"},
+    "戌": {"wuxing": "土", "yinyang": "陽", "character": "忠誠穩重、可靠"},
+    "亥": {"wuxing": "水", "yinyang": "陰", "character": "智慧內斂、思考深"}
 }
 
 # 基础提示词 (基于INTP)
@@ -94,18 +86,20 @@ base_system_prompt = """你是一個專門幫助懶人和容易拖延的人的�
 
 請遵循以下指示：
 
-1. 將用戶的大任務拆分為5-9個具體、可執行的小步驟，每一步應盡可能微小（理想在5分鐘內完成）。
+1. 將用戶的大任務拆分為5-9個具體、可執行的小步驟，每一步應盡可能微小（理想在5-10分鐘內完成）。
 2. 步驟之間必須有邏輯順序和連續性，後一步驟應直接建立在前一步驟的基礎上，以符合INTP的系統思考偏好。
 3. 避免重複的步驟或提供多種選擇（例如：不要同時建議「看視頻學習」和「讀書學習」），減少決策疲勞。
 4. 每個步驟應該非常簡單和具體，不需要整句只有鼓勵但沒有行動的步驟。
-5. 在每個步驟中加入只有一個表情符號，言語增加趣味性。
-6. 除了專有名詞外，使用繁體中文回答(港澳地區)，即使用戶使用英文輸入。
+5. 在每個步驟中加入不多於一個表情符號，言語增加趣味性。
+6. 除了專有名詞外，像香港人一樣使用繁體中文可能正常的夾集少量英文名詞回答，即使用戶使用英文輸入。
 7. 讓每個步驟看起來都很容易完成，降低開始的門檻，並強調「只需一小步」的心態。
 8. 使用親切、鼓勵的語氣，像是朋友在鼓勵對方一樣，並在鼓勵話語中強調每個小完成的成就感（例如「你已經開始了，這太棒了！」）。
 9. 每個步驟盡量不超過15個字，每個小步驟都是具體行動，不要只有鼓勵的話語。
-10. 針對INTP類型，步驟應注重邏輯性和系統性，例如從「定義問題」到「執行小實驗」，以激發他們的內在動機，但不用在步驟中提及人格類型。
+10. 針對INTP類型，步驟應注重邏輯性和系統性，例如從「定義問題」到「執行小實驗」，以激發他們的內在動機，但不要在步驟中提及人格類型。
 
 {rizhu_addition}
+
+11. 整個清單需完成大任務，不要提及人格類型。
 
 請按照以下格式返回：
 
@@ -156,8 +150,27 @@ task_templates = {
     ]
 }
 
+# 生成日柱提示词
+def generate_rizhu_prompt(tiangan, dizhi):
+    """根据天干地支生成日柱提示词"""
+    tiangan_prop = tiangan_properties.get(tiangan, {})
+    dizhi_prop = dizhi_properties.get(dizhi, {})
+    
+    tiangan_wx = tiangan_prop.get("wuxing", "")
+    tiangan_yy = tiangan_prop.get("yinyang", "")
+    tiangan_char = tiangan_prop.get("character", "")
+    
+    dizhi_wx = dizhi_prop.get("wuxing", "")
+    dizhi_yy = dizhi_prop.get("yinyang", "")
+    dizhi_char = dizhi_prop.get("character", "")
+    
+    # 根据阴阳五行特性生成更精确的提示
+    prompt = f"請根據{tiangan}{dizhi}日柱的特性（{tiangan}為{tiangan_yy}{tiangan_wx}，{tiangan_char}；{dizhi}為{dizhi_yy}{dizhi_wx}，{dizhi_char}），在鼓勵話語中融入適合這種陰陽五行組合的建議，幫助用戶更好地開始和完成任務。"
+    
+    return prompt
+
 # 使用 AI 拆分任务的函数
-def split_task_with_ai(task, api_key, model, rizhu):
+def split_task_with_ai(task, api_key, model, tiangan, dizhi):
     """使用 OpenRouter API 拆分任务"""
     try:
         headers = {
@@ -167,8 +180,8 @@ def split_task_with_ai(task, api_key, model, rizhu):
             'X-Title': 'Task Splitter App'
         }
         
-        # 根据选择的日柱构建完整的提示词
-        rizhu_addition = rizhu_config.get(rizhu, {}).get("prompt_addition", "")
+        # 根据选择的天干地支生成提示词
+        rizhu_addition = generate_rizhu_prompt(tiangan, dizhi)
         system_prompt = base_system_prompt.format(rizhu_addition=rizhu_addition)
         
         payload = {
@@ -277,9 +290,11 @@ def handle_task_splitting(task_input, use_template=False):
                 steps = split_task_with_template(task_input)
                 st.success("任務拆分完成！")
             else:
-                # 使用 AI 拆分，传入当前选择的日柱
-                steps = split_task_with_ai(task_input, api_key, model, st.session_state.selected_rizhu)
-                st.success(f"AI 任務拆分完成！(使用 {st.session_state.selected_rizhu} 日柱模式)")
+                # 使用 AI 拆分，传入当前选择的天干地支
+                steps = split_task_with_ai(task_input, api_key, model, 
+                                         st.session_state.selected_tiangan, 
+                                         st.session_state.selected_dizhi)
+                st.success(f"AI 任務拆分完成！(使用 {st.session_state.selected_tiangan}{st.session_state.selected_dizhi} 日柱模式)")
             
             # 保存任务到 session state
             st.session_state.tasks = [
@@ -379,18 +394,38 @@ col1, spacer, col2 = st.columns([1, 0.05, 2])  # 中间添加一个很窄的间�
 with col1:
     st.subheader("📝 輸入任務")
     
-    # 八字日柱选择下拉菜单
-    rizhu_options = list(rizhu_config.keys())
-    selected_rizhu = st.selectbox(
-        "選擇您的八字日柱",
-        options=rizhu_options,
-        index=rizhu_options.index(st.session_state.selected_rizhu) if st.session_state.selected_rizhu in rizhu_options else 0,
-        key="rizhu_select"
-    )
-    st.session_state.selected_rizhu = selected_rizhu
+    # 八字日柱选择 - 两个并排的下拉菜单
+    st.markdown("**選擇您的八字日柱**")
+    col_tiangan, col_dizhi = st.columns(2)
+    
+    with col_tiangan:
+        selected_tiangan = st.selectbox(
+            "天干",
+            options=tiangan_list,
+            index=tiangan_list.index(st.session_state.selected_tiangan) if st.session_state.selected_tiangan in tiangan_list else 0,
+            key="tiangan_select",
+            label_visibility="collapsed"
+        )
+        st.session_state.selected_tiangan = selected_tiangan
+    
+    with col_dizhi:
+        selected_dizhi = st.selectbox(
+            "地支",
+            options=dizhi_list,
+            index=dizhi_list.index(st.session_state.selected_dizhi) if st.session_state.selected_dizhi in dizhi_list else 0,
+            key="dizhi_select",
+            label_visibility="collapsed"
+        )
+        st.session_state.selected_dizhi = selected_dizhi
     
     # 显示当前选择的日柱描述
-    st.caption(rizhu_config.get(selected_rizhu, {}).get("description", ""))
+    tiangan_prop = tiangan_properties.get(selected_tiangan, {})
+    dizhi_prop = dizhi_properties.get(selected_dizhi, {})
+    
+    tiangan_desc = f"{selected_tiangan}({tiangan_prop.get('yinyang', '')}{tiangan_prop.get('wuxing', '')})"
+    dizhi_desc = f"{selected_dizhi}({dizhi_prop.get('yinyang', '')}{dizhi_prop.get('wuxing', '')})"
+    
+    st.caption(f"{selected_tiangan}{selected_dizhi}日柱 - 天干{tiangan_desc}，地支{dizhi_desc}")
     
     # 任务输入 - 使用 key 参数来确保实时同步
     task_input = st.text_area(
@@ -468,7 +503,7 @@ with col2:
         
         # 显示当前使用的日柱模式
         if api_key and st.session_state.tasks:
-            st.caption(f"當前使用: {st.session_state.selected_rizhu} 日柱專屬模式")
+            st.caption(f"當前使用: {st.session_state.selected_tiangan}{st.session_state.selected_dizhi} 日柱專屬模式")
         
         # 进度条
         completed_tasks = sum(1 for task in st.session_state.tasks if task["completed"])
