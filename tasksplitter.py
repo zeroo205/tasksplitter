@@ -326,12 +326,12 @@ def handle_task_splitting(task_input, use_template=False):
 
 # 重置函数
 def reset_app():
-    """重置应用状态"""
     st.session_state.tasks = []
     st.session_state.progress = 0
     st.session_state.show_celebration = False
     st.session_state.task_input = ""
     st.session_state.custom_task_text = ""
+    st.session_state.input_key = f"task_input_widget_{random.randint(1, 10000)}"
 
 # 添加自定义 CSS - 修复按钮格式并稍微增加字体
 st.markdown("""
@@ -437,13 +437,16 @@ with col1:
     
     st.caption(f"{selected_tiangan}{selected_dizhi}日柱 - 天干{tiangan_desc}，地支{dizhi_desc}")
     
+    if 'input_key' not in st.session_state:
+        st.session_state.input_key = "task_input_widget_0"
+    
     # 任务输入 - 使用 key 参数来确保实时同步
     task_input = st.text_area(
         "描述您想要完成的任務",
         placeholder="例如：我想學習某種技能...",
         height=90,
         value=st.session_state.task_input,
-        key="task_input_widget",  # 添加 key 来确保实时同步
+        key=st.session_state.input_key,
         label_visibility="collapsed"
     )
     
